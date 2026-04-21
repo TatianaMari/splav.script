@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Скрипт — Сплавы 2025</title>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;700&family=Manrope:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d1117;
+    --bg2: #161b22;
+    --bg3: #1e2530;
+    --border: rgba(255,255,255,0.08);
+    --text: #e6edf3;
+    --muted: #7d8590;
+    --accent: #3fb950;
+    --accent2: #58a6ff;
+    --warn: #f0883e;
+    --danger: #f85149;
+    --pill-bg: rgba(63,185,80,0.12);
+    --pill-border: rgba(63,185,80,0.3);
+    --radius: 14px;
+    --radius-sm: 8px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    font-family: 'Manrope', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding-bottom: 100px;
+  }
+
+  header {
+    background: var(--bg2);
+    border-bottom: 1px solid var(--border);
+    padding: 16px 20px 14px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .header-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+  }
+
+  .logo {
+    font-family: 'Unbounded', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--accent);
+    letter-spacing: 0.02em;
+  }
+
+  .deadline-badge {
+    font-size: 11px;
+    font-weight: 600;
+    background: rgba(240,136,62,0.15);
+    color: var(--warn);
+    border: 1px solid rgba(240,136,62,0.3);
+    padding: 4px 10px;
+    border-radius: 999px;
+  }
+
+  .nav-tabs {
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .nav-tabs::-webkit-scrollbar { display: none; }
+
+  .nav-tab {
+    flex-shrink: 0;
+    font-family: 'Manrope', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 6px 14px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .nav-tab.active {
+    background: var(--accent);
+    color: #0d1117;
+    border-color: var(--accent);
+  }
+
+  main { padding: 16px; }
+
+  .section { display: none; }
+  .section.active { display: block; }
+
+  .section-heading {
+    font-family: 'Unbounded', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 16px;
+    line-height: 1.4;
+  }
+
+  .card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+    margin-bottom: 12px;
+  }
+
+  .card-label {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+
+  .bubble {
+    background: var(--bg3);
+    border-radius: var(--radius-sm) var(--radius) var(--radius) var(--radius);
+    padding: 12px 14px;
+    font-size: 14px;
+    line-height: 1.65;
+    color: var(--text);
+    margin-bottom: 8px;
+    border-left: 2px solid var(--accent);
+  }
+
+  .bubble.copy-tap {
+    cursor: pointer;
+    position: relative;
+    transition: background 0.15s;
+  }
+  .bubble.copy-tap:active { background: rgba(63,185,80,0.1); }
+
+  .copy-hint {
+    font-size: 10px;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-bottom: 12px;
+    padding-left: 2px;
+  }
+
+  .tip {
+    background: rgba(63,185,80,0.08);
+    border: 1px solid rgba(63,185,80,0.2);
+    border-radius: var(--radius-sm);
+    padding: 10px 12px;
+    font-size: 12px;
+    color: var(--accent);
+    line-height: 1.5;
+    margin-top: 4px;
+  }
+
+  .branch-group { margin: 12px 0; }
+
+  .branch-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--accent2);
+    cursor: pointer;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 10px;
+    user-select: none;
+  }
+  .branch-toggle .arrow {
+    transition: transform 0.2s;
+    font-size: 10px;
+  }
+  .branch-toggle.open .arrow { transform: rotate(90deg); }
+
+  .branch-content { display: none; }
+  .branch-content.open { display: block; }
+
+  .objection-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    margin-bottom: 10px;
+    overflow: hidden;
+  }
+
+  .objection-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .objection-tag {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--danger);
+    background: rgba(248,81,73,0.1);
+    border: 1px solid rgba(248,81,73,0.25);
+    padding: 3px 10px;
+    border-radius: 999px;
+  }
+
+  .objection-chevron {
+    color: var(--muted);
+    font-size: 12px;
+    transition: transform 0.2s;
+  }
+  .objection-header.open .objection-chevron { transform: rotate(180deg); }
+
+  .objection-body {
+    display: none;
+    padding: 0 16px 16px;
+    border-top: 1px solid var(--border);
+  }
+  .objection-body.open { display: block; }
+
+  .price-row {
+    display: flex;
+    gap: 8px;
+    margin: 12px 0;
+    flex-wrap: wrap;
+  }
+
+  .price-tag {
+    flex: 1;
+    min-width: 140px;
+    border-radius: var(--radius-sm);
+    padding: 12px 14px;
+    text-align: center;
+  }
+  .price-tag.hot {
+    background: rgba(63,185,80,0.1);
+    border: 1px solid rgba(63,185,80,0.3);
+  }
+  .price-tag.cold {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+  }
+  .price-tag .amount {
+    font-family: 'Unbounded', sans-serif;
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--accent);
+    display: block;
+    margin-bottom: 3px;
+  }
+  .price-tag.cold .amount { color: var(--muted); }
+  .price-tag .label {
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  .step-list { list-style: none; counter-reset: step; }
+  .step-list li {
+    counter-increment: step;
+    display: flex;
+    gap: 12px;
+    margin-bottom: 12px;
+    align-items: flex-start;
+  }
+  .step-list li::before {
+    content: counter(step);
+    flex-shrink: 0;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: rgba(88,166,255,0.15);
+    color: var(--accent2);
+    font-size: 11px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 2px;
+  }
+  .step-body { flex: 1; }
+  .step-q {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+  .step-why {
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+
+  .copied-toast {
+    position: fixed;
+    bottom: 80px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--accent);
+    color: #0d1117;
+    font-size: 13px;
+    font-weight: 700;
+    padding: 8px 20px;
+    border-radius: 999px;
+    opacity: 0;
+    transition: all 0.2s;
+    pointer-events: none;
+    z-index: 999;
+  }
+  .copied-toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  .bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0; right: 0;
+    background: var(--bg2);
+    border-top: 1px solid var(--border);
+    display: flex;
+    padding: 10px 16px 20px;
+    gap: 8px;
+    z-index: 100;
+  }
+
+  .nav-btn {
+    flex: 1;
+    font-family: 'Manrope', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 11px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    background: var(--bg3);
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .nav-btn.active {
+    background: var(--accent);
+    color: #0d1117;
+    border-color: var(--accent);
+  }
+  .nav-btn:active { transform: scale(0.97); }
+
+  .divider {
+    height: 1px;
+    background: var(--border);
+    margin: 14px 0;
+  }
+
+  .include-list {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin: 10px 0;
+  }
+  .include-item {
+    background: var(--bg3);
+    border-radius: var(--radius-sm);
+    padding: 8px 10px;
+    font-size: 12px;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .include-item .dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+    flex-shrink: 0;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-top">
+    <div class="logo">⛵ СПЛАВЫ 2025</div>
+    <div class="deadline-badge">⚡ Ранняя цена до 1 мая</div>
+  </div>
+  <div class="nav-tabs" id="navTabs">
+    <button class="nav-tab active" onclick="showSection('open', this)">Старт</button>
+    <button class="nav-tab" onclick="showSection('qualify', this)">Квалификация</button>
+    <button class="nav-tab" onclick="showSection('present', this)">Презентация</button>
+    <button class="nav-tab" onclick="showSection('price', this)">Цена</button>
+    <button class="nav-tab" onclick="showSection('objections', this)">Возражения</button>
+  </div>
+</header>
+
+<main>
+
+  <!-- СТАРТ -->
+  <div class="section active" id="sec-open">
+    <div class="section-heading">Открытие диалога</div>
+
+    <div class="card">
+      <div class="card-label">Первое сообщение (входящий лид)</div>
+      <div class="copy-hint">
+        <span>👆</span> нажми на сообщение — скопируется
+      </div>
+      <div class="bubble copy-tap" onclick="copyText(this)">Привет! 🙌 Рада, что написал. Ты уже знаком с форматом наших сплавов или рассказать подробнее?</div>
+    </div>
+
+    <div class="branch-group">
+      <div class="branch-toggle" onclick="toggleBranch(this)">
+        <span class="arrow">▶</span> Если знаком с форматом
+      </div>
+      <div class="branch-content">
+        <div class="bubble copy-tap" onclick="copyText(this)">Отлично! 🙌 Если есть вопросы — задавай, буду рада помочь. Ты один планируешь или вас несколько человек?</div>
+        <div class="tip">→ Сразу уходим в квалификацию, не тратим время</div>
+      </div>
+    </div>
+
+    <div class="branch-group">
+      <div class="branch-toggle" onclick="toggleBranch(this)">
+        <span class="arrow">▶</span> Если хочет узнать подробнее
+      </div>
+      <div class="branch-content">
+        <div class="bubble copy-tap" onclick="copyText(this)">Коротко расскажу 👇
+
+Это сплав «всё включено» на 2 дня по реке Протва — формат выходного на природе без головной боли с организацией. Ночуете в домиках прямо на берегу, вкусно кушаете, паритесь в бане и гребёте в своё удовольствие.
+
+Открытие сезона 30–31 мая. В стоимость входит:
+— трансфер из Москвы (м. Кунцевская, 8:40) и обратно
+— 2-местное размещение в домиках
+— 3-разовое питание + барбекю
+— баня на берегу
+— всё снаряжение, инструктаж и сопровождение
+
+Сплавляемся на надувных байдарках — максимально безопасно и опыт не нужен. Как тебе формат?</div>
+        <div class="tip">→ После ответа сразу: «Ты один едешь или с компанией?»</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- КВАЛИФИКАЦИЯ -->
+  <div class="section" id="sec-qualify">
+    <div class="section-heading">Квалификация клиента</div>
+    <div class="tip" style="margin-bottom:16px;">Задай эти вопросы до презентации — тогда говоришь только то, что важно именно этому человеку</div>
+
+    <ul class="step-list">
+      <li>
+        <div class="step-body">
+          <div class="step-q">Один или с компанией?</div>
+          <div class="step-why">Для 4+ человек — скидка 10% каждому. Озвучивай сразу как бонус.</div>
+          <div class="bubble copy-tap" style="margin-top:8px;" onclick="copyText(this)">Ты один планируешь или вас несколько?</div>
+        </div>
+      </li>
+      <li>
+        <div class="step-body">
+          <div class="step-q">Опыт сплавов?</div>
+          <div class="step-why">Новичок → акцент на безопасности. Бывал → акцент на атмосфере и людях.</div>
+          <div class="bubble copy-tap" style="margin-top:8px;" onclick="copyText(this)">Скажи, бывал раньше на сплавах или это будет первый раз?</div>
+        </div>
+      </li>
+      <li>
+        <div class="step-body">
+          <div class="step-q">Что важнее?</div>
+          <div class="step-why">Помогает выбрать акцент при закрытии на оплату.</div>
+          <div class="bubble copy-tap" style="margin-top:8px;" onclick="copyText(this)">Что важнее — активная программа, или скорее отдохнуть и отключиться от города?</div>
+        </div>
+      </li>
+    </ul>
+  </div>
+
+  <!-- ПРЕЗЕНТАЦИЯ -->
+  <div class="section" id="sec-present">
+    <div class="section-heading">Презентация под клиента</div>
+
+    <div class="card">
+      <div class="card-label">Что входит в стоимость</div>
+      <div class="include-list">
+        <div class="include-item"><div class="dot"></div>Трансфер М↔️</div>
+        <div class="include-item"><div class="dot"></div>Домики 2-местные</div>
+        <div class="include-item"><div class="dot"></div>3-разовое питание</div>
+        <div class="include-item"><div class="dot"></div>Барбекю</div>
+        <div class="include-item"><div class="dot"></div>Баня на берегу</div>
+        <div class="include-item"><div class="dot"></div>Всё снаряжение</div>
+        <div class="include-item"><div class="dot"></div>Инструктор</div>
+        <div class="include-item"><div class="dot"></div>Инструктаж</div>
+      </div>
+      <div class="tip">📍 Старт: м. Кунцевская, 8:40 сб. Возврат: ~20:00 вс.</div>
+    </div>
+
+    <div class="branch-group">
+      <div class="branch-toggle" onclick="toggleBranch(this)">
+        <span class="arrow">▶</span> Едет один
+      </div>
+      <div class="branch-content">
+        <div class="bubble copy-tap" onclick="copyText(this)">Кстати, у нас примерно половина ребят едет в одиночку — и это совсем не мешает 😊 На сплаве все очень быстро знакомятся: уже к обеду первого дня обычно ощущение, что ехали вместе изначально. Много кто потом продолжает общаться.</div>
+      </div>
+    </div>
+
+    <div class="branch-group">
+      <div class="branch-toggle" onclick="toggleBranch(this)">
+        <span class="arrow">▶</span> Никогда не грёб
+      </div>
+      <div class="branch-content">
+        <div class="bubble copy-tap" onclick="copyText(this)">Опыт гребли вообще не нужен — перед стартом проводим подробный инструктаж прямо на берегу. Река спокойная, без порогов, инструктор рядом на всём маршруте. Большинство первый раз гребут именно у нас — и все справляются уже на первых 300 метрах 😄</div>
+      </div>
+    </div>
+
+    <div class="branch-group">
+      <div class="branch-toggle" onclick="toggleBranch(this)">
+        <span class="arrow">▶</span> Хочет отдохнуть
+      </div>
+      <div class="branch-content">
+        <div class="bubble copy-tap" onclick="copyText(this)">Это именно формат перезагрузки — никакой суеты, всё готово. Еда, жильё, программа — всё на нас. Ты просто приезжаешь и наслаждаешься. Многие говорят, что это лучшие выходные лета 🙌</div>
+      </div>
+    </div>
+
+    <div class="branch-group">
+      <div class="branch-toggle" onclick="toggleBranch(this)">
+        <span class="arrow">▶</span> Компания 4+ человек
+      </div>
+      <div class="branch-content">
+        <div class="bubble copy-tap" onclick="copyText(this)">Супер! Для компании от 4 человек у нас есть скидка 10% каждому — это приятный бонус 🎉</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ЦЕНА -->
+  <div class="section" id="sec-price">
+    <div class="section-heading">Цена и закрытие</div>
+
+    <div class="price-row">
+      <div class="price-tag hot">
+        <span class="amount">20 500 ₽</span>
+        <span class="label">⚡ до 1 мая</span>
+      </div>
+      <div class="price-tag cold">
+        <span class="amount">22 800 ₽</span>
+        <span class="label">после 1 мая</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">Как называть цену</div>
+      <div class="bubble copy-tap" onclick="copyText(this)">Стоимость участия — 20 500 ₽ при бронировании до 1 мая. В стоимость уже входит всё: трансфер, размещение, питание, баня, снаряжение и инструктор. Никаких доплат на месте 🙌</div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">Закрытие на оплату</div>
+      <div class="bubble copy-tap" onclick="copyText(this)">Чтобы зафиксировать место по цене раннего бронирования, нужна предоплата 5 000 ₽ — остаток оплачивается за неделю до сплава. Удобно оплатить сейчас?</div>
+      <div class="tip">→ Не спрашиваем «хотите поехать?» — сразу предлагаем конкретный шаг</div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">Если затягивает решение</div>
+      <div class="bubble copy-tap" onclick="copyText(this)">Места ограничены — группа специально небольшая, чтобы всем было комфортно. Хочешь — прямо сейчас забронирую пока есть место?</div>
+    </div>
+  </div>
+
+  <!-- ВОЗРАЖЕНИЯ -->
+  <div class="section" id="sec-objections">
+    <div class="section-heading">Работа с возражениями</div>
+
+    <div class="objection-card">
+      <div class="objection-header" onclick="toggleObj(this)">
+        <span class="objection-tag">Дорого</span>
+        <span class="objection-chevron">▼</span>
+      </div>
+      <div class="objection-body">
+        <div class="bubble copy-tap" style="margin-top:12px;" onclick="copyText(this)">Понимаю, давай разберём 😊 В 20 500 ₽ уже входит трансфер туда-обратно, 2 ночи в домике, 6 приёмов пищи, баня, всё снаряжение и инструктор. Если собирать самому — только трансфер и жильё за городом выйдет дороже. А тут ещё и приключение 🙌
+
+К тому же, сейчас цена раннего бронирования — после 1 мая будет на 2 300 ₽ дороже.</div>
+      </div>
+    </div>
+
+    <div class="objection-card">
+      <div class="objection-header" onclick="toggleObj(this)">
+        <span class="objection-tag">Не с кем поехать</span>
+        <span class="objection-chevron">▼</span>
+      </div>
+      <div class="objection-body">
+        <div class="bubble copy-tap" style="margin-top:12px;" onclick="copyText(this)">Это самое частое «препятствие» — и самое быстро исчезающее 😄 У нас стабильно половина группы едет соло. Формат сплава очень располагает к знакомствам: вместе гребёте, едите, сидите у костра. Приезжают незнакомыми — уезжают друзьями. Хочешь, познакомлю в чате с кем-то, кто тоже едет один?</div>
+      </div>
+    </div>
+
+    <div class="objection-card">
+      <div class="objection-header" onclick="toggleObj(this)">
+        <span class="objection-tag">Не умею грести</span>
+        <span class="objection-chevron">▼</span>
+      </div>
+      <div class="objection-body">
+        <div class="bubble copy-tap" style="margin-top:12px;" onclick="copyText(this)">Это как раз идеальный вариант для первого раза! Река Протва — спокойная, без порогов. Перед стартом инструктор проводит полноценный инструктаж прямо на берегу. На маршруте всегда рядом. Большинство участников гребут впервые — и все справляются уже на первых 300 метрах 😊</div>
+      </div>
+    </div>
+
+    <div class="objection-card">
+      <div class="objection-header" onclick="toggleObj(this)">
+        <span class="objection-tag">Подумаю</span>
+        <span class="objection-chevron">▼</span>
+      </div>
+      <div class="objection-body">
+        <div class="bubble copy-tap" style="margin-top:12px;" onclick="copyText(this)">Конечно, без проблем! Напомню только: цена раннего бронирования до 1 мая, после — +2 300 ₽. И мест немного — группа специально небольшая.
+
+Что мешает принять решение прямо сейчас? Может, есть вопрос, который я не закрыла?</div>
+        <div class="tip">→ Обязательно дождись ответа — за «подумаю» всегда прячется реальное возражение</div>
+      </div>
+    </div>
+
+  </div>
+
+</main>
+
+<div class="copied-toast" id="toast">Скопировано ✓</div>
+
+<script>
+  function showSection(name, btn) {
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.nav-tab').forEach(b => b.classList.remove('active'));
+    document.getElementById('sec-' + name).classList.add('active');
+    btn.classList.add('active');
+    window.scrollTo({top: 0, behavior: 'smooth'});
+  }
+
+  function toggleBranch(el) {
+    el.classList.toggle('open');
+    el.nextElementSibling.classList.toggle('open');
+  }
+
+  function toggleObj(el) {
+    el.classList.toggle('open');
+    el.nextElementSibling.classList.toggle('open');
+  }
+
+  function copyText(el) {
+    const text = el.innerText.trim();
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.setAttribute('readonly', '');
+    ta.style.cssText = 'position:absolute;left:-9999px;top:0;font-size:16px';
+    document.body.appendChild(ta);
+    const isIOS = /ipad|iphone/i.test(navigator.userAgent);
+    if (isIOS) {
+      const range = document.createRange();
+      range.selectNodeContents(ta);
+      const sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(range);
+      ta.setSelectionRange(0, 999999);
+    } else {
+      ta.select();
+    }
+    try { document.execCommand('copy'); } catch(e) {}
+    document.body.removeChild(ta);
+    const toast = document.getElementById('toast');
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 1800);
+  }
+</script>
+
+</body>
+</html>
